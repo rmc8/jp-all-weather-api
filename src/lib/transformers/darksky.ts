@@ -1,23 +1,22 @@
 import type { JmaNormalized } from '../jma/types';
 import { getCoordinates } from './coordinates';
-import { num } from './helpers';
+import { getBaseCode, isPartlyCloudy, isThunder, num } from './helpers';
 
 /** JMA 3桁天気コード → Dark Sky icon */
 export function toDarkSkyIcon(code: string): string {
-  const c = (code || '')[0];
-  switch (c) {
-    case '1':
-      return code === '100' || code === '110' || code === '111' || code === '112'
-        ? 'clear-day'
-        : 'partly-cloudy-day';
-    case '2':
-      return code === '201' || code === '210' ? 'partly-cloudy-day' : 'cloudy';
-    case '3':
+  if (!code) return 'cloudy';
+  if (isThunder(code)) return 'thunderstorm';
+
+  const base = getBaseCode(code);
+  switch (base) {
+    case '100':
+      return isPartlyCloudy(code) ? 'partly-cloudy-day' : 'clear-day';
+    case '200':
+      return isPartlyCloudy(code) ? 'partly-cloudy-day' : 'cloudy';
+    case '300':
       return 'rain';
-    case '4':
+    case '400':
       return 'snow';
-    case '5':
-      return 'thunderstorm';
     default:
       return 'cloudy';
   }

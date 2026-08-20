@@ -1,22 +1,21 @@
 import type { JmaNormalized } from '../jma/types';
-import { num } from './helpers';
+import { getBaseCode, isPartlyCloudy, isThunder, num } from './helpers';
 
 /** JMA 3桁天気コード → Apple WeatherKit conditionCode */
 export function toWeatherKitCondition(code: string): string {
-  const c = (code || '')[0];
-  switch (c) {
-    case '1':
-      return code === '100' || code === '110' || code === '111' || code === '112'
-        ? 'Clear'
-        : 'PartlyCloudy';
-    case '2':
-      return code === '201' || code === '210' ? 'PartlyCloudy' : 'Cloudy';
-    case '3':
+  if (!code) return 'Cloudy';
+  if (isThunder(code)) return 'Thunderstorms';
+
+  const base = getBaseCode(code);
+  switch (base) {
+    case '100':
+      return isPartlyCloudy(code) ? 'PartlyCloudy' : 'Clear';
+    case '200':
+      return isPartlyCloudy(code) ? 'PartlyCloudy' : 'Cloudy';
+    case '300':
       return 'Rain';
-    case '4':
+    case '400':
       return 'Snow';
-    case '5':
-      return 'Thunderstorms';
     default:
       return 'Cloudy';
   }
