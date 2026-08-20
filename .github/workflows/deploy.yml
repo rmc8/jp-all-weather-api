@@ -41,7 +41,8 @@ jobs:
       - name: "Build (SSG: 全予報区 × 12形式 の静的JSONを生成)"
         run: pnpm build
         env:
-          ASTRO_BASE: /jp-all-weather-api/
+          # カスタムドメイン(weather.rmc-8.com)でサイトルートに配信するため base は "/" にする
+          ASTRO_BASE: /
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
