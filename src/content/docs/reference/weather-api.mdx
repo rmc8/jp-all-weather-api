@@ -1,0 +1,68 @@
+---
+title: 天気API リファレンス
+description: 天気を取得するエンドポイントの仕様。
+tableOfContents: false
+---
+
+## エンドポイント
+
+```
+GET /api/{format}/{area}.json
+```
+
+| パラメータ | 型     | 説明                                           |
+| ---------- | ------ | ---------------------------------------------- |
+| `format`   | string | 出力フォーマット（下記の12種から選択）         |
+| `area`     | string | 予報区（Office）コード。例: `130000`（東京都） |
+
+### レスポンス
+
+- Content-Type: `application/json; charset=utf-8`（GeoJSON形式のみ `application/geo+json; charset=utf-8`）
+- Cache-Control: `public, max-age=3600`
+- ビルド時に生成される静的JSONのため、CDN等で高速に配信されます。
+
+### エラー
+
+- 存在しない `format` や `area` は404を返します。
+
+### データの鮮度
+
+- 気象庁は 5時・11時・17時(JST) に予報を更新します。
+- 本APIは定期ビルド（GitHub Actions による1日3回、気象庁の更新直後）で再生成されるため、各JSONの `reportDatetime`（発表時刻）で鮮度を判断できます。
+
+## その他のエンドポイント
+
+| エンドポイント            | 説明                                                                      |
+| ------------------------- | ------------------------------------------------------------------------- |
+| `/api/areas.json`         | 全国の予報区（Office）一覧を返す                                          |
+| `/api/geojson/japan.json` | 全国の予報区を1つの FeatureCollection に集約したGeoJSON（地図一括描画用） |
+
+## 例
+
+```sh
+# 東京都の天気を Livedoor 形式で取得
+curl "https://weather.rmc-8.com/api/livedoor/130000.json"
+
+# 大阪府の天気を WeatherAPI.com 形式で取得
+curl "https://weather.rmc-8.com/api/weatherapi/270000.json"
+
+# 東京都の天気を GeoJSON 形式で取得
+curl "https://weather.rmc-8.com/api/geojson/130000.json"
+```
+
+## フォーマット別URL一覧
+
+| フォーマット         | パス                              |
+| -------------------- | --------------------------------- |
+| Livedoor天気API      | `/api/livedoor/{area}.json`       |
+| WeatherAPI.com       | `/api/weatherapi/{area}.json`     |
+| OpenWeatherMap       | `/api/openweathermap/{area}.json` |
+| Open-Meteo           | `/api/open-meteo/{area}.json`     |
+| Tomorrow.io          | `/api/tomorrowio/{area}.json`     |
+| Visual Crossing      | `/api/visualcrossing/{area}.json` |
+| AccuWeather          | `/api/accuweather/{area}.json`    |
+| GeoJSON (RFC 7946)   | `/api/geojson/{area}.json`        |
+| Dark Sky             | `/api/darksky/{area}.json`        |
+| Apple WeatherKit     | `/api/weatherkit/{area}.json`     |
+| Schema.org (JSON-LD) | `/api/schemaorg/{area}.json`      |
+| Yahoo! JAPAN YOLP    | `/api/yahoo/{area}.json`          |

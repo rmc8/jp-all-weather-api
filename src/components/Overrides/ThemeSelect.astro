@@ -1,0 +1,100 @@
+---
+// テーマ切替を、シンプルなアイコンボタン（太陽/月のトグル）に置き換える。
+// ライト→ダーク→ライト をクリックで切り替え、`data-theme` と
+// localStorage('starlight-theme') を更新する（Starlight / Starwind 双方に反映）。
+---
+
+<button
+  class="theme-toggle sl-flex"
+  type="button"
+  data-theme-toggle
+  aria-label="テーマ切替"
+  title="テーマ切替（ライト / ダーク）"
+>
+  <svg
+    class="icon-sun"
+    viewBox="0 0 24 24"
+    width="18"
+    height="18"
+    fill="currentColor"
+    aria-hidden="true"
+  >
+    <path
+      d="M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10Zm0 2a3 3 0 1 1 0 6 3 3 0 0 1 0-6Zm7-3h2v2h-2V6Zm-1.17 4.83 1.42-1.41 1.41 1.41-1.41 1.42-1.42-1.42ZM12 1h2v4h-2V1ZM5.75 3.93l1.42 1.41-1.42 1.42L4.34 5.34l1.41-1.42ZM4 11h4v2H4v-2Zm1.75 5.66 1.42 1.42-1.42 1.41-1.41-1.41 1.41-1.42ZM12 19h2v4h-2v-4Zm6.25.34 1.42-1.42 1.41 1.42-1.41 1.41-1.42-1.41Z"
+    ></path>
+  </svg>
+  <svg
+    class="icon-moon"
+    viewBox="0 0 24 24"
+    width="18"
+    height="18"
+    fill="currentColor"
+    aria-hidden="true"
+  >
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"></path>
+  </svg>
+</button>
+
+<style>
+  .theme-toggle {
+    align-items: center;
+    justify-content: center;
+    width: 2.2rem;
+    height: 2.2rem;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 0.5rem;
+    color: var(--sl-color-text);
+    background: transparent;
+    cursor: pointer;
+    transition:
+      background-color 120ms ease,
+      border-color 120ms ease;
+  }
+  .theme-toggle:hover {
+    background-color: var(--sl-color-gray-6);
+  }
+  .theme-toggle .icon-moon {
+    display: none;
+  }
+  .theme-toggle.is-dark .icon-sun {
+    display: none;
+  }
+  .theme-toggle.is-dark .icon-moon {
+    display: block;
+  }
+</style>
+
+<script>
+  const storageKey = "starlight-theme";
+
+  const effectiveTheme = (): "dark" | "light" => {
+    const stored = localStorage.getItem(storageKey);
+    if (stored === "dark" || stored === "light") return stored;
+    return document.documentElement.dataset.theme === "dark"
+      ? "dark"
+      : window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light";
+  };
+
+  const applyTheme = (theme: "dark" | "light") => {
+    document.documentElement.dataset.theme = theme;
+    localStorage.setItem(storageKey, theme);
+    document
+      .querySelectorAll<HTMLElement>("[data-theme-toggle]")
+      .forEach((btn) => {
+        btn.classList.toggle("is-dark", theme === "dark");
+      });
+  };
+
+  // 初期状態を反映
+  applyTheme(effectiveTheme());
+
+  document
+    .querySelectorAll<HTMLElement>("[data-theme-toggle]")
+    .forEach((btn) => {
+      btn.addEventListener("click", () => {
+        applyTheme(effectiveTheme() === "dark" ? "light" : "dark");
+      });
+    });
+</script>

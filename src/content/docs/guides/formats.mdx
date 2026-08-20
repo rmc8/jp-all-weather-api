@@ -1,0 +1,400 @@
+---
+title: 対応フォーマット
+description: 12種類のJSONフォーマットの特徴と使い分け。
+tableOfContents: false
+---
+
+本APIは気象庁の予報データを、以下の12のフォーマットへ変換して配信します。用途に合わせて使い分けられます。
+
+## Livedoor天気API
+
+かつて広く利用された「Livedoor 天気情報（Weather Hacks）」互換の構造です。日本語のテロップ（`telop`）や日付ラベル（`今日`・`明日`・`明後日`）、降水確率の時間帯別オブジェクトを持ちます。
+
+```sh
+GET /api/livedoor/{area}.json
+```
+
+```json
+{
+  "publicTime": "2026-08-20T05:00:00+09:00",
+  "title": "東京都 東京地方 の天気",
+  "forecasts": [
+    {
+      "date": "2026-08-20",
+      "dateLabel": "今日",
+      "telop": "晴れ",
+      "temperature": {
+        "min": { "celsius": "24", "fahrenheit": "75" },
+        "max": { "celsius": "33", "fahrenheit": "91" }
+      },
+      "chanceOfRain": {
+        "T00_06": "0%",
+        "T06_12": "20%",
+        "T12_18": "20%",
+        "T18_24": "20%"
+      }
+    }
+  ],
+  "location": {
+    "area": "関東甲信",
+    "pref": "東京都",
+    "city": "東京地方",
+    "id": "130000"
+  },
+  "description": { "text": "東京地方は、高気圧に覆われて…", "publicTime": "…" }
+}
+```
+
+## WeatherAPI.com
+
+キー名に単位が明記され（`temp_c`・`wind_kph` など）、`location` / `current` / `forecast` の直感的な階層を持つ形式です。LLM（AIエージェント）がパース・解釈しやすい設計です。
+
+```sh
+GET /api/weatherapi/{area}.json
+```
+
+```json
+{
+  "location": {
+    "name": "東京地方",
+    "region": "東京都",
+    "country": "Japan",
+    "tz_id": "Asia/Tokyo",
+    "localtime": "2026-08-20T05:00:00+09:00"
+  },
+  "current": {
+    "last_updated": "2026-08-20T05:00:00+09:00",
+    "temp_c": 33,
+    "condition": { "text": "晴れ", "code": 0 }
+  },
+  "forecast": {
+    "forecastday": [
+      {
+        "date": "2026-08-20",
+        "day": { "maxtemp_c": 33, "mintemp_c": 24, "daily_chance_of_rain": 0 }
+      }
+    ]
+  }
+}
+```
+
+## OpenWeatherMap
+
+業界標準の「Current Weather Data」互換の構造です。`weather` 配列と `main` オブジェクトが分離されています。仕様に合わせて気温は**ケルビン**で出力します。
+
+```sh
+GET /api/openweathermap/{area}.json
+```
+
+```json
+{
+  "weather": [
+    { "id": 0, "main": "Clear", "description": "晴れ", "icon": "01d" }
+  ],
+  "main": {
+    "temp": 306.15,
+    "temp_min": 297.15,
+    "temp_max": 306.15
+  },
+  "timezone": 32400,
+  "name": "東京地方",
+  "cod": 200
+}
+```
+
+## Open-Meteo
+
+カラム指向・時系列配列の形式です。日時配列（`daily.time`）と各気象要素配列のインデックスが同期しており、グラフ描画やデータ分析に適しています。
+
+```sh
+GET /api/open-meteo/{area}.json
+```
+
+```json
+{
+  "timezone": "Asia/Tokyo",
+  "daily": {
+    "time": ["2026-08-20", "2026-08-21"],
+    "weather_code": [0, 3],
+    "temperature_2m_max": [33, 32],
+    "temperature_2m_min": [24, 24],
+    "precipitation_probability_max": [0, 40]
+  },
+  "daily_units": {
+    "temperature_2m_max": "°C",
+    "temperature_2m_min": "°C",
+    "precipitation_probability_max": "%"
+  }
+}
+```
+
+## Tomorrow.io
+
+グローバルな商用サービスや AI エージェントで採用が多い構造です。`timelines` の中に時系列データと測定値（`values`）が整理されています。
+
+```sh
+GET /api/tomorrowio/{area}.json
+```
+
+```json
+{
+  "data": {
+    "timelines": [
+      {
+        "timestep": "1d",
+        "startTime": "2026-08-20T05:00:00+09:00",
+        "intervals": [
+          {
+            "startTime": "2026-08-20T00:00:00+09:00",
+            "values": {
+              "weatherCode": 1000,
+              "temperature": 33,
+              "temperatureMin": 24,
+              "temperatureMax": 33,
+              "precipitationProbability": 10
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+## Visual Crossing
+
+配列のネストが浅く、Python の Pandas や BI ツール、スプレッドシートへ直接流し込みやすい実用的なフォーマットです。
+
+```sh
+GET /api/visualcrossing/{area}.json
+```
+
+```json
+{
+  "resolvedAddress": "東京地方, Japan",
+  "address": "130000",
+  "timezone": "Asia/Tokyo",
+  "days": [
+    {
+      "datetime": "2026-08-20",
+      "temp": 33,
+      "tempmax": 33,
+      "tempmin": 24,
+      "precipprob": 10,
+      "conditions": "Clear",
+      "description": "晴れ"
+    }
+  ]
+}
+```
+
+## AccuWeather
+
+世界各国の組み込み天気アプリで利用されている形式です。1日の予報が `Day` と `Night` に明確に分かれているのが特徴です（気象庁の日単位予報のため昼夜は同じ値を使用します）。
+
+```sh
+GET /api/accuweather/{area}.json
+```
+
+```json
+{
+  "Headline": {
+    "EffectiveDate": "2026-08-20T05:00:00+09:00",
+    "Text": "晴れ"
+  },
+  "DailyForecasts": [
+    {
+      "Date": "2026-08-20T07:00:00+09:00",
+      "Temperature": {
+        "Minimum": { "Value": 24, "Unit": "C" },
+        "Maximum": { "Value": 33, "Unit": "C" }
+      },
+      "Day": {
+        "Icon": 1,
+        "IconPhrase": "晴れ",
+        "HasPrecipitation": true,
+        "PrecipitationProbability": 10
+      },
+      "Night": {
+        "Icon": 1,
+        "IconPhrase": "晴れ",
+        "HasPrecipitation": true,
+        "PrecipitationProbability": 10
+      }
+    }
+  ]
+}
+```
+
+## GeoJSON (RFC 7946)
+
+位置情報（緯度経度）と気象データを一体化させた国際標準形式です。MapLibre GL JS、Leaflet、Kepler.gl などの地図ライブラリにそのまま渡すだけで、日本地図上に全国の天気ピンを描画できます。座標は気象庁の予報区（代表観測地）の固定値を組み込んでいます。
+
+```sh
+# 単一の予報区
+GET /api/geojson/{area}.json
+
+# 全国を1つの FeatureCollection に集約
+GET /api/geojson/japan.json
+```
+
+```json
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [139.6917, 35.6895]
+      },
+      "properties": {
+        "areaCode": "130000",
+        "name": "東京地方",
+        "telop": "晴れ",
+        "weatherCode": "100",
+        "tempMax": 33,
+        "tempMin": 24
+      }
+    }
+  ]
+}
+```
+
+## Dark Sky / Pirate Weather
+
+かつてのデファクトスタンダードで、現在も Home Assistant などの IoT プラットフォームで広く使われている形式です。直感的な `currently` / `daily` の階層構造を持ちます。
+
+```sh
+GET /api/darksky/{area}.json
+```
+
+```json
+{
+  "latitude": 35.6895,
+  "longitude": 139.6917,
+  "timezone": "Asia/Tokyo",
+  "currently": {
+    "time": 1724112000,
+    "summary": "晴れ",
+    "icon": "clear-day",
+    "temperature": 33
+  },
+  "daily": {
+    "summary": "向こう数日間は晴天が続く見込みです。",
+    "data": [
+      {
+        "time": 1724112000,
+        "summary": "晴れ",
+        "icon": "clear-day",
+        "temperatureHigh": 33,
+        "temperatureLow": 24,
+        "precipProbability": 0.1
+      }
+    ]
+  }
+}
+```
+
+## Apple WeatherKit
+
+iOS / macOS の「天気」アプリを支えるモダンな Apple 公式設計です。データセットごとに独立したオブジェクト（`currentWeather` / `forecastDaily`）を持ち、階層が論理的で AI やアプリに扱いやすい構造です。
+
+```sh
+GET /api/weatherkit/{area}.json
+```
+
+```json
+{
+  "currentWeather": {
+    "asOf": "2026-08-20T05:00:00+09:00",
+    "conditionCode": "Clear",
+    "temperature": 33
+  },
+  "forecastDaily": {
+    "days": [
+      {
+        "forecastStart": "2026-08-20T00:00:00Z",
+        "conditionCode": "Clear",
+        "temperatureMax": 33,
+        "temperatureMin": 24,
+        "precipitationChance": 0.1
+      }
+    ]
+  }
+}
+```
+
+## Schema.org (JSON-LD)
+
+W3C / Schema.org で定義されたセマンティックWeb標準です。AIエージェントやナレッジグラフに天候メタデータを認識させる用途に向いています。
+
+```sh
+GET /api/schemaorg/{area}.json
+```
+
+```json
+{
+  "@context": "https://schema.org",
+  "@type": "WeatherForecast",
+  "name": "東京地方の天気予報",
+  "validFrom": "2026-08-20T05:00:00+09:00",
+  "validUntil": "2026-08-21T00:00:00+09:00",
+  "variableMeasured": [
+    {
+      "@type": "PropertyValue",
+      "name": "temperatureMax",
+      "value": 33,
+      "unitCode": "CEL"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "temperatureMin",
+      "value": 24,
+      "unitCode": "CEL"
+    }
+  ]
+}
+```
+
+## Yahoo! JAPAN YOLP
+
+国内向け地図・位置情報連携で長年利用されてきた仕様です。`Feature` 配列の中に観測・予報の WeatherList が格納されます。気象庁データに降水量階級（`Rainfall`）が無いため、本APIでは `"0"` を返します。
+
+```sh
+GET /api/yahoo/{area}.json
+```
+
+```json
+{
+  "ResultInfo": {
+    "Count": 1,
+    "Status": 200
+  },
+  "Feature": [
+    {
+      "Name": "東京地方",
+      "Property": {
+        "WeatherList": {
+          "Weather": [
+            {
+              "Type": "observation",
+              "Date": "202608200500",
+              "Weather": "晴れ",
+              "WeatherCode": 100,
+              "Rainfall": "0"
+            },
+            {
+              "Type": "Forecast",
+              "Date": "202608200500",
+              "Weather": "晴れ",
+              "WeatherCode": 100,
+              "Rainfall": "0"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
+```

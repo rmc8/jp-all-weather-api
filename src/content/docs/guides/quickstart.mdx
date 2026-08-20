@@ -1,0 +1,124 @@
+---
+title: クイックスタート
+description: 最短5分で天気APIを使い始めるための手順。
+tableOfContents: false
+---
+
+このAPIは、気象庁(JMA)が公開する天気予報データを複数の JSON フォーマットへ変換して配信します。ビルド時に静的JSONとして生成されるため、サーバー不要で高速・高負荷耐性があります。
+
+## 1. エリア一覧を取得する
+
+全国の予報区（Office）一覧を取得します。
+
+```sh
+curl https://weather.rmc-8.com/api/areas.json
+```
+
+レスポンスには各予報区の `id`・`name`・`region` と、各フォーマットのURLが含まれます。
+
+```json
+{
+  "count": 58,
+  "formats": [
+    "livedoor",
+    "weatherapi",
+    "openweathermap",
+    "open-meteo",
+    "tomorrowio",
+    "visualcrossing",
+    "accuweather",
+    "geojson",
+    "darksky",
+    "weatherkit",
+    "schemaorg",
+    "yahoo"
+  ],
+  "offices": [
+    {
+      "id": "130000",
+      "name": "東京都",
+      "region": "関東甲信",
+      "url": [
+        "/api/livedoor/130000.json",
+        "/api/weatherapi/130000.json",
+        "/api/openweathermap/130000.json",
+        "/api/open-meteo/130000.json",
+        "/api/tomorrowio/130000.json",
+        "/api/visualcrossing/130000.json",
+        "/api/accuweather/130000.json",
+        "/api/geojson/130000.json",
+        "/api/darksky/130000.json",
+        "/api/weatherkit/130000.json",
+        "/api/schemaorg/130000.json",
+        "/api/yahoo/130000.json"
+      ]
+    }
+  ]
+}
+```
+
+## 2. 天気を取得する
+
+予報区コードを指定して天気を取得します。下記は東京都（`130000`）の例です。
+
+```sh
+# Livedoor天気API形式
+curl "https://weather.rmc-8.com/api/livedoor/130000.json"
+
+# WeatherAPI.com形式
+curl "https://weather.rmc-8.com/api/weatherapi/130000.json"
+
+# OpenWeatherMap形式
+curl "https://weather.rmc-8.com/api/openweathermap/130000.json"
+
+# Open-Meteo形式
+curl "https://weather.rmc-8.com/api/open-meteo/130000.json"
+
+# Tomorrow.io形式
+curl "https://weather.rmc-8.com/api/tomorrowio/130000.json"
+
+# Visual Crossing形式
+curl "https://weather.rmc-8.com/api/visualcrossing/130000.json"
+
+# AccuWeather形式
+curl "https://weather.rmc-8.com/api/accuweather/130000.json"
+
+# GeoJSON形式（地図可視化用）
+curl "https://weather.rmc-8.com/api/geojson/130000.json"
+
+# 全国を1つのFeatureCollectionに集約したGeoJSON
+curl "https://weather.rmc-8.com/api/geojson/japan.json"
+
+# Dark Sky / Pirate Weather形式
+curl "https://weather.rmc-8.com/api/darksky/130000.json"
+
+# Apple WeatherKit形式
+curl "https://weather.rmc-8.com/api/weatherkit/130000.json"
+
+# Schema.org (JSON-LD)形式
+curl "https://weather.rmc-8.com/api/schemaorg/130000.json"
+
+# Yahoo! JAPAN YOLP形式
+curl "https://weather.rmc-8.com/api/yahoo/130000.json"
+```
+
+## 3. 代表的な予報区コード
+
+| 都道府県                   | コード   |
+| -------------------------- | -------- |
+| 北海道（宗谷）             | `011000` |
+| 北海道（石狩・空知・後志） | `016000` |
+| 東京都                     | `130000` |
+| 神奈川県                   | `140000` |
+| 愛知県                     | `230000` |
+| 大阪府                     | `270000` |
+| 福岡県                     | `400000` |
+| 沖縄県                     | `471000` |
+
+すべてのコードは [`/api/areas.json`](/api/areas.json) から取得できます。
+
+## 次のステップ
+
+- [対応フォーマット](/docs/guides/formats) で各形式の特徴を確認する
+- [天気API リファレンス](/docs/reference/weather-api) でパラメータを確認する
+- [レスポンス形式](/docs/reference/response-format) で各JSONの構造を確認する
