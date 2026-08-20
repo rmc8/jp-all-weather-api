@@ -1,0 +1,65 @@
+---
+title: エリア一覧 リファレンス
+description: 予報区（Office）コードの一覧を取得するエンドポイント。
+tableOfContents: false
+---
+
+## エンドポイント
+
+```
+GET /api/areas.json
+```
+
+全国の予報区（Office）一覧を、地方名と各フォーマットのURLつきで返します。予報区は気象庁のエリアマスタ（`area.json`）から取得する約58箇所です。
+
+```json
+{
+  "count": 58,
+  "formats": [
+    "livedoor",
+    "weatherapi",
+    "openweathermap",
+    "open-meteo",
+    "tomorrowio",
+    "visualcrossing",
+    "accuweather",
+    "geojson",
+    "darksky",
+    "weatherkit",
+    "schemaorg",
+    "yahoo"
+  ],
+  "offices": [
+    {
+      "id": "130000",
+      "name": "東京都",
+      "region": "関東甲信",
+      "url": [
+        "/api/livedoor/130000.json",
+        "/api/weatherapi/130000.json",
+        "/api/openweathermap/130000.json",
+        "/api/open-meteo/130000.json",
+        "/api/tomorrowio/130000.json",
+        "/api/visualcrossing/130000.json",
+        "/api/accuweather/130000.json",
+        "/api/geojson/130000.json",
+        "/api/darksky/130000.json",
+        "/api/weatherkit/130000.json",
+        "/api/schemaorg/130000.json",
+        "/api/yahoo/130000.json"
+      ]
+    }
+  ]
+}
+```
+
+## フィールド
+
+| フィールド         | 型       | 説明                   |
+| ------------------ | -------- | ---------------------- |
+| `count`            | number   | 予報区の総数           |
+| `formats`          | string[] | 対応フォーマット一覧   |
+| `offices[].id`     | string   | 予報区コード           |
+| `offices[].name`   | string   | 予報区名（例: 東京都） |
+| `offices[].region` | string   | 地方名（例: 関東甲信） |
+| `offices[].url`    | string[] | 各フォーマットのURL    |

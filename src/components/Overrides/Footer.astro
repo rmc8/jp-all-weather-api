@@ -1,0 +1,247 @@
+---
+import EditLink from "virtual:starlight/components/EditLink";
+import LastUpdated from "virtual:starlight/components/LastUpdated";
+import Pagination from "virtual:starlight/components/Pagination";
+
+const links = [
+  { href: "https://rmc-8.com", label: "Website" },
+  { href: "https://bsky.app/profile/k.rmc-8.com", label: "Bluesky" },
+  { href: "https://www.threads.com/@rmc_km", label: "Threads" },
+  { href: "https://x.com/rmc_km", label: "X" },
+];
+const year = new Date().getFullYear();
+---
+
+<!-- 本文内メタ（編集・更新日・前へ/次へ） -->
+<footer class="sl-flex">
+  <div class="meta sl-flex">
+    <EditLink />
+    <LastUpdated />
+  </div>
+  <Pagination />
+</footer>
+
+<!-- ページ最下部のフッター -->
+<footer class="site-footer">
+  <div class="footer-bottom">
+    <p class="copyright">
+      © {year} - <a
+        href="https://rmc-8.com"
+        target="_blank"
+        rel="noopener noreferrer">rmc8</a
+      > - <a href="/">All Weather</a>
+    </p>
+    <p>
+      <nav class="links" aria-label="関連リンク">
+        {
+          links.map((l) => (
+            <a
+              href={l.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="link"
+            >
+              {l.label}
+            </a>
+          ))
+        }
+      </nav>
+    </p>
+    <p class="credits">
+      出典: <a
+        href="https://www.jma.go.jp/"
+        target="_blank"
+        rel="noopener noreferrer">気象庁</a
+      >
+      （本APIの天気データは気象庁の公開情報を加工して作成しています。本プロジェクトは気象庁公式のサービスではありません）
+    </p>
+  </div>
+</footer>
+
+<!-- On This Page トグル（右サイドバーを隠し、ボタンで表示） -->
+<div class="toc-fab" data-toc-fab hidden>
+  <div class="toc-panel" id="toc-panel" hidden>
+    <p class="toc-title">On This Page</p>
+    <ul class="toc-list"></ul>
+  </div>
+  <button
+    type="button"
+    class="toc-btn"
+    aria-expanded="false"
+    aria-controls="toc-panel"
+  >
+    目次
+  </button>
+</div>
+
+<script>
+  (function () {
+    const fab = document.querySelector("[data-toc-fab]") as HTMLElement | null;
+    const content = document.querySelector(
+      ".sl-markdown-content",
+    ) as HTMLElement | null;
+    const list = document.querySelector(".toc-list") as HTMLElement | null;
+    if (!fab || !content || !list) return;
+    // ホーム（ランディング）では On This Page を出さない（URL で判定）
+    const base = (
+      document.querySelector("base")?.getAttribute("href") || "/"
+    ).replace(/\/+$/, "");
+    const path = location.pathname.replace(/\/+$/, "");
+    const isHome = path === base;
+    if (isHome) return;
+    const headings = Array.from(content.querySelectorAll("h2, h3")).filter(
+      (h) => h.id,
+    );
+    if (!headings.length) return;
+    fab.hidden = false;
+    for (const h of headings) {
+      const li = document.createElement("li");
+      const a = document.createElement("a");
+      a.href = "#" + h.id;
+      a.textContent = h.textContent;
+      if (h.tagName === "H3") a.className = "toc-h3";
+      li.appendChild(a);
+      list.appendChild(li);
+    }
+    const btn = fab.querySelector(".toc-btn") as HTMLButtonElement | null;
+    const panel = fab.querySelector("#toc-panel") as HTMLElement | null;
+    btn?.addEventListener("click", () => {
+      const open = btn.getAttribute("aria-expanded") === "true";
+      btn.setAttribute("aria-expanded", String(!open));
+      if (panel) panel.hidden = open;
+    });
+  })();
+</script>
+
+<style>
+  footer {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  .meta {
+    gap: 0.75rem 3rem;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin-top: 3rem;
+    font-size: var(--sl-text-sm);
+    color: var(--sl-color-gray-3);
+  }
+
+  /* サイトフッター（コンテンツ幅に収まる、横オーバーフローなし） */
+  .site-footer {
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--sl-color-gray-5);
+    gap: 1rem;
+  }
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .link {
+    padding: 0.35rem 0.85rem;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 999px;
+    font-size: var(--sl-text-sm);
+    color: var(--sl-color-text);
+    text-decoration: none;
+    transition:
+      background-color 120ms ease,
+      border-color 120ms ease;
+  }
+  .link:hover {
+    background-color: var(--sl-color-gray-6);
+    border-color: var(--sl-color-gray-4);
+  }
+  .footer-bottom {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+  /* global.css の p padding を打ち消す */
+  .site-footer p {
+    padding: 0;
+    margin: 0;
+  }
+  .copyright {
+    font-size: var(--sl-text-sm);
+    color: var(--sl-color-gray-3);
+  }
+  .copyright a {
+    color: var(--sl-color-gray-3);
+    text-decoration: none;
+  }
+  .copyright a:hover {
+    color: var(--sl-color-text);
+  }
+  .credits {
+    font-size: var(--sl-text-xs);
+    color: var(--sl-color-gray-3);
+  }
+  .credits a {
+    color: var(--sl-color-gray-3);
+    text-decoration: underline;
+  }
+
+  /* On This Page トグル（右下の浮動ボタン） */
+  .toc-fab {
+    position: fixed;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+  }
+  .toc-btn {
+    padding: 0.5rem 0.9rem;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 999px;
+    background: var(--sl-color-gray-7);
+    color: var(--sl-color-text);
+    font-size: var(--sl-text-sm);
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgb(0 0 0 / 0.2);
+  }
+  .toc-btn:hover {
+    background-color: var(--sl-color-gray-6);
+  }
+  .toc-panel {
+    max-width: 15rem;
+    max-height: 60vh;
+    overflow: auto;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 0.5rem;
+    background: var(--sl-color-gray-7);
+    padding: 0.75rem;
+    box-shadow: 0 4px 16px rgb(0 0 0 / 0.25);
+  }
+  .toc-title {
+    margin: 0 0 0.5rem;
+    font-size: var(--sl-text-sm);
+    font-weight: 600;
+    color: var(--sl-color-white);
+  }
+  .toc-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .toc-list a {
+    display: block;
+    padding: 0.2rem 0;
+    font-size: var(--sl-text-xs);
+    color: var(--sl-color-gray-3);
+    text-decoration: none;
+  }
+  .toc-list a:hover {
+    color: var(--sl-color-white);
+  }
+  .toc-h3 {
+    padding-left: 0.75rem !important;
+  }
+</style>

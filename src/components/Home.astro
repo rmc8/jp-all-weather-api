@@ -1,0 +1,173 @@
+---
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/starwind/card";
+import { Badge } from "@/components/starwind/badge";
+import { getForecast, getOverview } from "@/lib/jma/client";
+import { normalizeForecast } from "@/lib/jma/normalize";
+import { FORMATS, type FormatName } from "@/lib/transformers";
+import { iconCategory } from "@/lib/transformers/helpers";
+import { AREAS_URL, weatherUrl } from "@/config";
+
+const TOKYO = "130000";
+const [reports, overview] = await Promise.all([
+  getForecast(TOKYO),
+  getOverview(TOKYO),
+]);
+const norm = normalizeForecast(TOKYO, "東京都", "関東甲信", reports, overview);
+
+const formatKeys = Object.keys(FORMATS) as FormatName[];
+const samples = Object.fromEntries(
+  formatKeys.map((k) => [
+    k,
+    JSON.stringify(FORMATS[k].transform(norm), null, 2),
+  ]),
+);
+const today = norm.forecast[0];
+const icon = (code: string) => `/icons/${iconCategory(code)}.svg`;
+
+/** pre に安全に埋め込むため HTML エスケープする */
+const escapeHtml = (s: string) =>
+  s.replace(/&/g, "&").replace(/</g, "<").replace(/>/g, ">");
+
+/** ISO 日時文字列を自然な日本語表記に整形（例: 2026年8月20日 5:00） */
+const formatDate = (iso: string): string => {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日 ${d.getHours()}時${String(
+    d.getMinutes(),
+  ).padStart(2, "0")}分`;
+};
+---
+
+<section class="not-content mx-auto max-w-5xl px-4 py-10">
+  <!-- Hero -->
+  <div class="mb-12 text-center">
+    <div class="mb-4 flex items-center justify-center gap-2">
+      <Badge variant="outline">気象庁(JMA) データソース</Badge>
+      <Badge variant="outline">12フォーマット対応</Badge>
+      <Badge variant="outline">SSG</Badge>
+    </div>
+    <h1 class="text-4xl font-bold tracking-tight sm:text-5xl py-4">
+      JP All Weather API
+    </h1>
+    <p class="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
+      気象庁の天気予報データを
+      <strong>Livedoor天気API</strong>・<strong>WeatherAPI.com</strong>・<strong
+        >OpenWeatherMap</strong
+      >
+      など、12種類の形式へ変換して配信するAPIです。全国の予報区（約58）をカバーします。
+    </p>
+  </div>
+
+  <!-- 東京 天気デモ -->
+  <Card class="mb-12">
+    <CardHeader class="flex flex-row items-center justify-between">
+      <div>
+        <CardTitle>{norm.areaName} の天気（{norm.officeName}）</CardTitle>
+        <CardDescription>
+          発表: {formatDate(norm.reportDatetime)} ／ データ出典: {
+            norm.publishingOffice
+          }（加工して作成）
+        </CardDescription>
+      </div>
+      <img
+        src={icon(today.weatherCode)}
+        alt={today.weather}
+        width="64"
+        height="64"
+      />
+    </CardHeader>
+    <CardContent>
+      <div class="pb-4 flex flex-wrap items-end gap-3">
+        <span class="text-5xl font-bold">{today.tempMax ?? "--"}°C</span>
+        <span class="text-muted-foreground"
+          >最高 / 最低 {today.tempMin ?? "--"}°C</span
+        >
+        <Badge>{today.weather}</Badge>
+        {
+          today.pop !== null && (
+            <Badge variant="outline">降水 {today.pop}%</Badge>
+          )
+        }
+      </div>
+      <div class="grid grid-cols-2 gap-2 sm:grid-cols-4 md:grid-cols-7">
+        {
+          norm.forecast.map((f) => (
+            <div class="flex flex-col items-center rounded-lg border p-3 text-center">
+              <span class="text-xs text-muted-foreground">{f.dateLabel}</span>
+              <img
+                src={icon(f.weatherCode)}
+                alt={f.weather}
+                width="32"
+                height="32"
+                class="my-1"
+              />
+              <span class="text-sm">{f.tempMax ?? "--"}°</span>
+              <span class="text-xs text-muted-foreground">
+                {f.tempMin ?? "--"}°
+              </span>
+            </div>
+          ))
+        }
+      </div>
+      {
+        norm.overviewText && (
+          <p class="mt-4 text-sm text-muted-foreground">{norm.overviewText}</p>
+        )
+      }
+    </CardContent>
+  </Card>
+
+  <!-- フォーマット紹介 -->
+  <h2 class="mb-4 text-2xl font-bold">対応フォーマット</h2>
+  <div class="grid gap-4 sm:grid-cols-2">
+    {
+      formatKeys.map((k) => (
+        <Card class="min-w-0">
+          <CardHeader>
+            <CardTitle>{FORMATS[k].label}</CardTitle>
+            <CardDescription class="wrap-break-word">
+              {FORMATS[k].description}
+            </CardDescription>
+          </CardHeader>
+          <CardContent class="min-w-0">
+            <code class="block overflow-x-auto whitespace-nowrap rounded-md bg-muted p-2 text-xs">
+              GET /api/{k}/{"{area}"}.json
+            </code>
+            <pre
+              class="mt-3 max-h-56 max-w-full overflow-auto rounded-md bg-muted p-3 text-xs"
+              set:html={escapeHtml(samples[k])}
+            />
+          </CardContent>
+        </Card>
+      ))
+    }
+  </div>
+
+  <!-- クイックスタート -->
+  <h2 class="mb-4 mt-12 text-2xl font-bold">クイックスタート</h2>
+  <Card>
+    <CardContent class="space-y-4">
+      <div>
+        <p class="mb-2 font-medium">1. エリア一覧を取得</p>
+        <pre
+          class="overflow-auto rounded-md bg-muted p-3 text-xs">curl {AREAS_URL}</pre>
+      </div>
+      <div>
+        <p class="mb-2 font-medium">2. 天気を取得（例: 東京都 130000）</p>
+        <pre
+          class="overflow-auto rounded-md bg-muted p-3 text-xs">curl "{weatherUrl("livedoor", "130000")}"</pre>
+      </div>
+    </CardContent>
+  </Card>
+
+  <p class="mt-8 text-center text-xs text-muted-foreground">
+    出典:
+    気象庁（本APIの天気データは気象庁の公開情報を加工して作成しています。本プロジェクトは気象庁公式のサービスではありません）
+  </p>
+</section>

@@ -1,0 +1,8 @@
+---
+const { entry } = Astro.locals.starlightRoute;
+// ホーム(index)ページではカスタムUI(Home.astro)が自身の見出しを持つため、
+// Starlight が自動生成するページタイトル(h1)を非表示にする。
+const isHome = entry.id === "index" || entry.id === "";
+---
+
+{isHome ? null : <h1 id="_top">{entry.data.title}</h1>}
