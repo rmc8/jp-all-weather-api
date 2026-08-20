@@ -36,6 +36,7 @@ export default defineConfig({
 					items: [
 						{ label: 'ホーム', slug: 'index' },
 						{ label: 'クイックスタート', slug: 'guides/quickstart' },
+						{ label: '気象庁仕様と注意事項', slug: 'guides/jma-spec' },
 						{ label: 'フォーマット一覧', slug: 'guides/formats' },
 					],
 				},
