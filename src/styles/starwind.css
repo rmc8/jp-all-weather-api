@@ -198,3 +198,43 @@
 .sl-markdown-content :where(li):not(.not-content *) {
   margin: 0.25em 0;
 }
+
+/* --- Starlight ドキュメント内のテーブルスタイル --- */
+.sl-markdown-content :where(table):not(.not-content *) {
+  width: 100%;
+  display: table;
+  border-collapse: collapse;
+  margin: 1.5em 0;
+  font-size: 0.9em;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.sl-markdown-content :where(th, td):not(.not-content *) {
+  padding: 0.65rem 1rem;
+  border: 1px solid var(--border);
+  text-align: left;
+}
+
+.sl-markdown-content :where(th):not(.not-content *) {
+  background-color: var(--muted);
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.sl-markdown-content :where(tbody tr:nth-child(even)):not(.not-content *) {
+  background-color: color-mix(in srgb, var(--muted) 40%, transparent);
+}
+
+.sl-markdown-content :where(tbody tr:hover):not(.not-content *) {
+  background-color: color-mix(in srgb, var(--muted) 70%, transparent);
+}
+
+/* --- インラインコードスタイル（pre内コードを除く） --- */
+.sl-markdown-content :where(:not(pre) > code):not(.not-content *) {
+  padding: 0.15em 0.35em;
+  border-radius: var(--radius-xs);
+  background-color: var(--muted);
+  border: 1px solid var(--border);
+  font-size: 0.85em;
+}
