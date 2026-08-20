@@ -122,9 +122,9 @@ const formatDate = (iso: string): string => {
                 {f.weather}
               </span>
               <div class="flex items-center gap-1 text-xs">
-                <span class="font-semibold text-rose-500">{f.tempMax ?? "--"}°</span>
+                <span class="font-semibold text-red-600 dark:text-red-400">{f.tempMax ?? "--"}°</span>
                 <span class="text-muted-foreground">/</span>
-                <span class="text-blue-500">{f.tempMin ?? "--"}°</span>
+                <span class="text-blue-600 dark:text-blue-400">{f.tempMin ?? "--"}°</span>
               </div>
             </div>
           ))
