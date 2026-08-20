@@ -1,22 +1,21 @@
 import type { JmaNormalized } from '../jma/types';
-import { num } from './helpers';
+import { getBaseCode, isPartlyCloudy, isThunder, num } from './helpers';
 
 /** JMA 3桁天気コード → AccuWeather Icon 番号 */
 export function toAccuWeatherIcon(code: string): number {
-  const c = (code || '')[0];
-  switch (c) {
-    case '1':
-      return code === '100' || code === '110' || code === '111'
-        ? 1 // Sunny
-        : 3; // Partly Sunny
-    case '2':
-      return code === '201' || code === '210' ? 3 : 7; // Cloudy
-    case '3':
-      return code === '303' ? 18 : 12; // Rain / Showers
-    case '4':
-      return code === '403' ? 22 : 19; // Snow / Flurries
-    case '5':
-      return 15; // Thunderstorms
+  if (!code) return 7;
+  if (isThunder(code)) return 15; // Thunderstorms
+
+  const base = getBaseCode(code);
+  switch (base) {
+    case '100':
+      return isPartlyCloudy(code) ? 3 : 1; // Partly Sunny / Sunny
+    case '200':
+      return isPartlyCloudy(code) ? 4 : 7; // Intermittent Clouds / Cloudy
+    case '300':
+      return code === '303' || code === '309' ? 18 : 12; // Rain / Showers
+    case '400':
+      return code === '403' || code === '409' ? 22 : 19; // Snow / Flurries
     default:
       return 7;
   }

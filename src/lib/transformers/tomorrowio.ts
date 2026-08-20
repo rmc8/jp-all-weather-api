@@ -1,27 +1,24 @@
 import type { JmaNormalized } from '../jma/types';
-import { num } from './helpers';
+import { getBaseCode, isPartlyCloudy, isThunder, num } from './helpers';
 
 /**
  * JMA 3桁天気コード → Tomorrow.io weatherCode。
  * https://docs.tomorrow.io/reference/data-layers-weather-codes
  */
 export function toTomorrowioCode(code: string): number {
-  const c = (code || '')[0];
-  switch (c) {
-    case '1': // 晴系
-      // 100/110/111/112 は晴れ中心 → Clear
-      if (code === '100' || code === '110' || code === '111' || code === '112') {
-        return 1000;
-      }
-      return 1101; // 晴れ時々曇り/雨 → Partly Cloudy
-    case '2': // 曇系
-      return code === '201' || code === '210' ? 1101 : 1001;
-    case '3': // 雨系
-      return code === '301' ? 4200 : 4001;
-    case '4': // 雪系
-      return code === '401' ? 5001 : 5000;
-    case '5': // 雷系
-      return 8000;
+  if (!code) return 1001;
+  if (isThunder(code)) return 8000;
+
+  const base = getBaseCode(code);
+  switch (base) {
+    case '100': // 晴系
+      return isPartlyCloudy(code) ? 1101 : 1000;
+    case '200': // 曇系
+      return isPartlyCloudy(code) ? 1101 : 1001;
+    case '300': // 雨系
+      return code === '301' || code === '102' || code === '202' ? 4200 : 4001;
+    case '400': // 雪系
+      return code === '401' || code === '104' || code === '204' ? 5100 : 5000;
     default:
       return 1001;
   }
