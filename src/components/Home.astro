@@ -34,13 +34,23 @@ const icon = (code: string) => `/icons/${iconCategory(code)}.svg`;
 const escapeHtml = (s: string) =>
   s.replace(/&/g, "&").replace(/</g, "<").replace(/>/g, ">");
 
-/** ISO 日時文字列を自然な日本語表記に整形（例: 2026年8月20日 5:00） */
+/** ISO 日時文字列を日本時間(JST)の自然な日本語表記に整形（例: 2026年8月20日 11時00分） */
 const formatDate = (iso: string): string => {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
-  return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日 ${d.getHours()}時${String(
-    d.getMinutes(),
-  ).padStart(2, "0")}分`;
+  const parts = new Intl.DateTimeFormat("ja-JP", {
+    timeZone: "Asia/Tokyo",
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(d);
+  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
+  return `${get("year")}年${get("month")}月${get("day")}日 ${get(
+    "hour",
+  )}時${get("minute")}分`;
 };
 ---
 
