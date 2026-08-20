@@ -1,16 +1,1 @@
-* {
-    line-height: 1.5em;
-}
-h1, h2, h3, h4, h5, h6 {
-    padding-top: 0.5em;
-    padding-bottom: 0.5em;
-}
-p {
-    padding-top: 0.5em;
-    padding-bottom: 0.5em;
-}
-
-code {
-    margin-top: 1.0em;
-    margin-bottom: 1.0em;
-}
+/* グローバルなカスタム補正（タイポグラフィと余白は starwind.css で管理） */
