@@ -54,18 +54,18 @@ const formatDate = (iso: string): string => {
 };
 ---
 
-<section class="not-content mx-auto max-w-5xl px-4 py-10">
+<section class="not-content mx-auto max-w-5xl px-4 py-8 sm:py-12">
   <!-- Hero -->
-  <div class="mb-12 text-center">
-    <div class="mb-4 flex items-center justify-center gap-2">
+  <div class="hero-block text-center">
+    <div class="hero-badges flex items-center justify-center gap-2">
       <Badge variant="outline">気象庁ソース</Badge>
       <Badge variant="outline">12フォーマット対応</Badge>
       <Badge variant="outline">SSG</Badge>
     </div>
-    <h1 class="text-4xl font-bold tracking-tight sm:text-5xl py-4">
+    <h1 class="text-4xl font-bold tracking-tight sm:text-5xl">
       JP All Weather API
     </h1>
-    <p class="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
+    <p class="hero-desc mx-auto max-w-2xl text-lg text-muted-foreground">
       気象庁の天気予報データを
       <strong>Livedoor天気API</strong>・<strong>WeatherAPI.com</strong>・<strong
         >OpenWeatherMap</strong
@@ -75,7 +75,7 @@ const formatDate = (iso: string): string => {
   </div>
 
   <!-- 東京 天気デモ -->
-  <Card class="mb-12">
+  <Card class="demo-card">
     <CardHeader class="flex flex-row items-center justify-between">
       <div>
         <CardTitle>{norm.areaName} の天気（{norm.officeName}）</CardTitle>
@@ -150,15 +150,17 @@ const formatDate = (iso: string): string => {
       </div>
       {
         norm.overviewText && (
-          <p class="mt-4 text-sm text-muted-foreground">{norm.overviewText}</p>
+          <p class="overview-text text-sm text-muted-foreground">
+            {norm.overviewText}
+          </p>
         )
       }
     </CardContent>
   </Card>
 
   <!-- フォーマット紹介 -->
-  <h2 class="mb-4 text-2xl font-bold">対応フォーマット</h2>
-  <div class="grid gap-4 sm:grid-cols-2">
+  <h2 class="section-heading text-2xl font-bold">対応フォーマット</h2>
+  <div class="formats-grid grid gap-6 sm:grid-cols-2">
     {
       formatKeys.map((k) => (
         <Card class="min-w-0">
@@ -173,7 +175,7 @@ const formatDate = (iso: string): string => {
               GET /api/{k}/{"{area}"}.json
             </code>
             <pre
-              class="mt-3 max-h-56 max-w-full overflow-auto rounded-md bg-muted p-3 text-xs"
+              class="format-sample max-h-56 max-w-full overflow-auto rounded-md bg-muted p-3 text-xs"
               set:html={escapeHtml(samples[k])}
             />
           </CardContent>
@@ -183,31 +185,108 @@ const formatDate = (iso: string): string => {
   </div>
 
   <!-- クイックスタート -->
-  <h2 class="mb-4 mt-12 text-2xl font-bold">クイックスタート</h2>
-  <Card>
-    <CardContent class="space-y-4">
-      <div>
-        <p class="mb-2 font-medium">1. エリア一覧を取得</p>
+  <h2 class="section-heading text-2xl font-bold">クイックスタート</h2>
+  <Card class="quickstart-card">
+    <CardContent>
+      <div class="quickstart-step">
+        <p class="font-medium text-sm">1. エリア一覧を取得</p>
         <pre
           class="overflow-auto rounded-md bg-muted p-3 text-xs">curl {AREAS_URL}</pre>
       </div>
-      <div>
-        <p class="mb-2 font-medium">2. 天気を取得（例: 東京都 130000）</p>
+      <div class="quickstart-step">
+        <p class="font-medium text-sm">2. 天気を取得（例: 東京都 130000）</p>
         <pre
           class="overflow-auto rounded-md bg-muted p-3 text-xs">curl "{weatherUrl("livedoor", "130000")}"</pre>
       </div>
     </CardContent>
   </Card>
 
-  <div class="mt-8 rounded-lg border p-4 text-center text-xs text-muted-foreground space-y-1">
+  <div
+    class="note-box rounded-lg border p-5 text-center text-xs text-muted-foreground"
+  >
     <p>
-      出典: <a href="https://www.jma.go.jp/" target="_blank" rel="noopener noreferrer" class="underline hover:text-foreground">気象庁</a>（本APIの気象データは気象庁の公開情報を加工・配信している非公式サービスです）
+      出典: <a
+        href="https://www.jma.go.jp/"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="underline hover:text-foreground">気象庁</a
+      >（本APIの気象データは気象庁の公開情報を加工・配信している非公式サービスです）
     </p>
     <p>
       言及されている各社製品名・サービス名は各権利者の商標です。データ構造上の互換性を目的として参照しています。
     </p>
     <p>
-      <a href="/guides/jma-spec/" class="underline font-medium hover:text-foreground">気象庁データの仕様と注意事項・免責事項・商標注記の詳細はこちら →</a>
+      <a
+        href="/guides/jma-spec/"
+        class="underline font-medium hover:text-foreground"
+        >気象庁データの仕様と注意事項・免責事項・商標注記の詳細はこちら →</a
+      >
     </p>
   </div>
 </section>
+
+<style>
+  /* --- ページ全体のセクション余白リズム --- */
+  .hero-block {
+    margin-bottom: 3.5rem;
+  }
+  .hero-badges {
+    margin-bottom: 1rem;
+  }
+  .hero-block h1 {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+  .hero-desc {
+    margin-top: 1rem;
+    line-height: 1.7;
+  }
+
+  .demo-card {
+    margin-bottom: 3.5rem;
+  }
+  .overview-text {
+    margin-top: 1.25rem;
+    line-height: 1.65;
+  }
+
+  .section-heading {
+    margin-top: 3.5rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .formats-grid {
+    margin-bottom: 3.5rem;
+  }
+  .format-sample {
+    margin-top: 0.75rem;
+  }
+
+  .quickstart-card {
+    margin-bottom: 3rem;
+  }
+  .quickstart-step {
+    margin-bottom: 1.25rem;
+  }
+  .quickstart-step:last-child {
+    margin-bottom: 0;
+  }
+  .quickstart-step p {
+    margin-bottom: 0.5rem;
+  }
+
+  .note-box {
+    margin-top: 2.5rem;
+  }
+  .note-box p {
+    margin-top: 0.35rem;
+    margin-bottom: 0.35rem;
+    line-height: 1.6;
+  }
+  .note-box p:first-child {
+    margin-top: 0;
+  }
+  .note-box p:last-child {
+    margin-bottom: 0;
+  }
+</style>

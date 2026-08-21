@@ -238,3 +238,17 @@
   border: 1px solid var(--border);
   font-size: 0.85em;
 }
+
+h1, h2, h3, h4, h5, h6 {
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
+}
+
+p {
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
+}
+
+code {
+  margin-bottom: 1em;
+}
